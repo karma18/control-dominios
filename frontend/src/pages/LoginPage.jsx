@@ -7,9 +7,9 @@ import {
   Mail,
   ShieldCheck,
 } from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
+import { useAuth } from '../app/providers/AuthProvider';
 
-export function LoginPage() {
+export function LoginPage({ onLoginSuccess }) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +23,7 @@ export function LoginPage() {
 
     try {
       await login(email, password);
+      onLoginSuccess?.();
     } catch (loginError) {
       setError(loginError.message);
     } finally {
