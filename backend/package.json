@@ -1,0 +1,16 @@
+{
+  "name": "control-dominios-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "db:migrate": "knex --knexfile knexfile.js migrate:latest",
+    "db:rollback": "knex --knexfile knexfile.js migrate:rollback",
+    "db:status": "knex --knexfile knexfile.js migrate:status"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "knex": "^3.2.10",
+    "mysql2": "^3.22.3"
+  }
+}
