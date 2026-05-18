@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Control Dominios API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3000/api
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      security: []
+      summary: Check API health.
+      responses:
+        '200':
+          description: API is available.
+  /auth/login:
+    post:
+      security: []
+      summary: Authenticate a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: JWT token and user profile.
+        '401':
+          description: Invalid credentials.
+  /auth/me:
+    get:
+      summary: Return authenticated user profile.
+      responses:
+        '200':
+          description: Authenticated user.
+  /catalog/{resource}:
+    get:
+      summary: List catalog records.
+      parameters:
+        - $ref: '#/components/parameters/Resource'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Catalog records.
+    post:
+      summary: Create a catalog record.
+      parameters:
+        - $ref: '#/components/parameters/Resource'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Created catalog record.
+  /catalog/{resource}/{id}:
+    get:
+      summary: Get a catalog record by id.
+      parameters:
+        - $ref: '#/components/parameters/Resource'
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Catalog record.
+    put:
+      summary: Update a catalog record.
+      parameters:
+        - $ref: '#/components/parameters/Resource'
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Updated catalog record.
+    delete:
+      summary: Delete a catalog record.
+      parameters:
+        - $ref: '#/components/parameters/Resource'
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Deleted catalog record.
+  /users:
+    get:
+      summary: List users.
+      responses:
+        '200':
+          description: Users.
+    post:
+      summary: Create a user.
+      responses:
+        '201':
+          description: Created user.
+  /users/{id}:
+    get:
+      summary: Get a user.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: User.
+    put:
+      summary: Update a user.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Updated user.
+    delete:
+      summary: Delete a user.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Deleted user.
+  /domains:
+    get:
+      summary: List domains with computed costs.
+      responses:
+        '200':
+          description: Domain inventory.
+    post:
+      summary: Create a domain inventory record.
+      responses:
+        '201':
+          description: Created domain.
+  /domains/{id}:
+    get:
+      summary: Get a domain inventory record.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Domain.
+    put:
+      summary: Update a domain inventory record.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Updated domain.
+    delete:
+      summary: Delete a domain inventory record.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Deleted domain.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Resource:
+      in: path
+      name: resource
+      required: true
+      schema:
+        type: string
+        enum:
+          - roles
+          - domain-providers
+          - domain-extensions
+          - domain-types
+          - domain-actions
+          - provider-extension-prices
+          - provider-service-prices
+          - financial-settings
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+    Search:
+      in: query
+      name: search
+      schema:
+        type: string
+    Page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        default: 1
+    PageSize:
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+        default: 50
