@@ -19,6 +19,8 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "knex": "^3.2.10",
-    "mysql2": "^3.22.3"
+    "mysql2": "^3.22.3",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   }
 }

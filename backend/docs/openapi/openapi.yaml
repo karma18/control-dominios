@@ -1,62 +1,90 @@
 openapi: 3.0.3
 info:
   title: Control Dominios API
-  version: 0.1.0
+  version: 0.2.0
+  description: API for domain inventory management with JWT authentication.
 servers:
   - url: http://localhost:3000/api
+tags:
+  - name: Health
+  - name: Authentication
+  - name: Catalogs
+  - name: Users
+  - name: Domains
 security:
   - bearerAuth: []
 paths:
   /health:
     get:
+      tags:
+        - Health
       security: []
       summary: Check API health.
       responses:
         '200':
           description: API is available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /auth/login:
     post:
+      tags:
+        - Authentication
       security: []
-      summary: Authenticate a user.
+      summary: Authenticate a user and return a JWT.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
           description: JWT token and user profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
         '401':
-          description: Invalid credentials.
+          $ref: '#/components/responses/Unauthorized'
   /auth/me:
     get:
+      tags:
+        - Authentication
       summary: Return authenticated user profile.
       responses:
         '200':
           description: Authenticated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /catalog/{resource}:
     get:
+      tags:
+        - Catalogs
       summary: List catalog records.
       parameters:
         - $ref: '#/components/parameters/Resource'
         - $ref: '#/components/parameters/Search'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Active'
       responses:
         '200':
           description: Catalog records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
+      tags:
+        - Catalogs
       summary: Create a catalog record.
       parameters:
         - $ref: '#/components/parameters/Resource'
@@ -65,13 +93,16 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/CatalogPayload'
       responses:
         '201':
           description: Created catalog record.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /catalog/{resource}/{id}:
     get:
+      tags:
+        - Catalogs
       summary: Get a catalog record by id.
       parameters:
         - $ref: '#/components/parameters/Resource'
@@ -79,7 +110,13 @@ paths:
       responses:
         '200':
           description: Catalog record.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
+      tags:
+        - Catalogs
       summary: Update a catalog record.
       parameters:
         - $ref: '#/components/parameters/Resource'
@@ -89,12 +126,17 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/CatalogPayload'
       responses:
         '200':
           description: Updated catalog record.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
+      tags:
+        - Catalogs
       summary: Delete a catalog record.
       parameters:
         - $ref: '#/components/parameters/Resource'
@@ -102,78 +144,196 @@ paths:
       responses:
         '204':
           description: Deleted catalog record.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /users:
     get:
+      tags:
+        - Users
       summary: List users.
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: Users.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
+      tags:
+        - Users
       summary: Create a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
       responses:
         '201':
           description: Created user.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /users/{id}:
     get:
+      tags:
+        - Users
       summary: Get a user.
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
         '200':
           description: User.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
+      tags:
+        - Users
       summary: Update a user.
       parameters:
         - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
       responses:
         '200':
           description: Updated user.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
+      tags:
+        - Users
       summary: Delete a user.
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
         '204':
           description: Deleted user.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /domains:
     get:
+      tags:
+        - Domains
       summary: List domains with computed costs.
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: Domain inventory.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
+      tags:
+        - Domains
       summary: Create a domain inventory record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DomainRequest'
       responses:
         '201':
           description: Created domain.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /domains/{id}:
     get:
+      tags:
+        - Domains
       summary: Get a domain inventory record.
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
         '200':
           description: Domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
+      tags:
+        - Domains
       summary: Update a domain inventory record.
       parameters:
         - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DomainRequest'
       responses:
         '200':
           description: Updated domain.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
+      tags:
+        - Domains
       summary: Delete a domain inventory record.
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
         '204':
           description: Deleted domain.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: JWT token is missing, invalid or expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Requested record was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   parameters:
     Resource:
       in: path
@@ -213,3 +373,180 @@ components:
       schema:
         type: integer
         default: 50
+    Active:
+      in: query
+      name: active
+      schema:
+        type: boolean
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: control-dominios-backend
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        details:
+          nullable: true
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    ListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            total:
+              type: integer
+    CatalogPayload:
+      type: object
+      additionalProperties: true
+      description: Payload shape depends on the selected catalog resource.
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        role_id:
+          type: integer
+        role_name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        is_active:
+          type: boolean
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+    UserCreateRequest:
+      type: object
+      required:
+        - role_id
+        - first_name
+        - last_name
+        - email
+        - password
+      properties:
+        role_id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        is_active:
+          type: boolean
+    UserUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/UserCreateRequest'
+      description: Password is optional when updating a user.
+    DomainRequest:
+      type: object
+      required:
+        - domain_name
+        - domain_provider_id
+        - domain_extension_id
+        - provider_extension_price_id
+        - domain_type_id
+        - domain_action_id
+        - expiration_date
+      properties:
+        domain_name:
+          type: string
+        domain_provider_id:
+          type: integer
+        domain_extension_id:
+          type: integer
+        provider_extension_price_id:
+          type: integer
+        domain_type_id:
+          type: integer
+        domain_action_id:
+          type: integer
+        dns_service_price_id:
+          type: integer
+          nullable: true
+        security_service_price_id:
+          type: integer
+          nullable: true
+        expiration_date:
+          type: string
+          format: date
+        notes:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+    Domain:
+      allOf:
+        - $ref: '#/components/schemas/DomainRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+            provider_name:
+              type: string
+            extension:
+              type: string
+            domain_price_amount:
+              type: number
+            dns_price_amount:
+              type: number
+            security_price_amount:
+              type: number
+            subtotal_amount:
+              type: number
+            vat_rate:
+              type: number
+            vat_amount:
+              type: number
+            total_amount:
+              type: number
+            total_usd_amount:
+              type: number
+            usd_exchange_rate:
+              type: number
