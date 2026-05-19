@@ -78,45 +78,7 @@ export function LoginPage({ onLoginSuccess }) {
         </form>
       </section>
 
-      <section className="login-preview" aria-label="Dashboard preview">
-        <div className="preview-topbar">
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <div className="preview-grid">
-          <div className="metric-card green">
-            <Globe2 size={28} />
-            <strong>103</strong>
-            <span>Domains</span>
-          </div>
-          <div className="metric-card purple">
-            <ShieldCheck size={28} />
-            <strong>230</strong>
-            <span>Services</span>
-          </div>
-          <div className="metric-card red">
-            <BarChart3 size={28} />
-            <strong>323</strong>
-            <span>Renewals</span>
-          </div>
-        </div>
-
-        <div className="preview-panels">
-          <div className="preview-chart">
-            {[44, 62, 82, 74, 58, 71, 49].map((height) => (
-              <span key={height} style={{ height: `${height}%` }} />
-            ))}
-          </div>
-          <div className="preview-list">
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      </section>
+      
     </main>
   );
 }
