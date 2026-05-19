@@ -42,7 +42,7 @@ export function DashboardLayout({
       <aside className="sidebar">
         <div className="sidebar-brand">
           <Globe2 size={22} />
-          <span>DOMAINS</span>
+          <span>DOMINIOS AUTOCOM</span>
         </div>
 
         <nav className="sidebar-nav">
