@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { resources } from '../../config/resources';
 import { useAuth } from '../../app/providers/AuthProvider';
+import autocomLogo from '../../assets/images/autocom-logo.png';
 
 const iconMap = {
   domains: Globe2,
@@ -41,8 +42,7 @@ export function DashboardLayout({
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <Globe2 size={22} />
-          <span>DOMINIOS AUTOCOM</span>
+          <img src={autocomLogo} alt="AUTOCOM" />
         </div>
 
         <nav className="sidebar-nav">

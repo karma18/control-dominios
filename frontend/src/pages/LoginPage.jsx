@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import {
-  BarChart3,
-  Globe2,
   KeyRound,
   LockKeyhole,
   Mail,
-  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../app/providers/AuthProvider';
+import autocomLogo from '../assets/images/autocom-logo.png';
 
 export function LoginPage({ onLoginSuccess }) {
   const { login } = useAuth();
@@ -35,8 +33,8 @@ export function LoginPage({ onLoginSuccess }) {
     <main className="login-shell">
       <section className="login-panel">
         <div className="brand-mark">
-          <Globe2 size={22} />
-          <span>Control Dominios</span>
+          <img src={autocomLogo} alt="AUTOCOM" />
+          <span>Domain Control</span>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
