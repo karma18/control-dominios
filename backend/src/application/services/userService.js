@@ -56,6 +56,15 @@ async function list(filters = {}) {
     });
   }
 
+  if (filters.role_id) {
+    baseQuery.where('users.role_id', filters.role_id);
+  }
+
+  if (filters.is_active !== undefined && filters.is_active !== '') {
+    const isActive = filters.is_active === true || filters.is_active === 'true' || filters.is_active === '1';
+    baseQuery.where('users.is_active', isActive);
+  }
+
   const countRow = await baseQuery.clone().count({ total: 'users.id' }).first();
   const data = await baseQuery
     .clone()

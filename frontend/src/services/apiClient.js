@@ -40,12 +40,14 @@ async function request(path, options = {}) {
   return data;
 }
 
-function withSearch(path, search) {
+function withQuery(path, filters = {}) {
   const params = new URLSearchParams({ pageSize: '200' });
 
-  if (search) {
-    params.set('search', search);
-  }
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, value);
+    }
+  });
 
   return `${path}?${params.toString()}`;
 }
@@ -56,7 +58,7 @@ export const apiClient = {
     body: { email, password },
   }),
   me: () => request('/auth/me'),
-  listCatalog: (resource, search = '') => request(withSearch(`/catalog/${resource}`, search)),
+  listCatalog: (resource, filters = {}) => request(withQuery(`/catalog/${resource}`, filters)),
   createCatalog: (resource, payload) => request(`/catalog/${resource}`, {
     method: 'POST',
     body: payload,
@@ -68,7 +70,7 @@ export const apiClient = {
   deleteCatalog: (resource, id) => request(`/catalog/${resource}/${id}`, {
     method: 'DELETE',
   }),
-  listUsers: (search = '') => request(withSearch('/users', search)),
+  listUsers: (filters = {}) => request(withQuery('/users', filters)),
   createUser: (payload) => request('/users', {
     method: 'POST',
     body: payload,
@@ -80,7 +82,7 @@ export const apiClient = {
   deleteUser: (id) => request(`/users/${id}`, {
     method: 'DELETE',
   }),
-  listDomains: (search = '') => request(withSearch('/domains', search)),
+  listDomains: (filters = {}) => request(withQuery('/domains', filters)),
   createDomain: (payload) => request('/domains', {
     method: 'POST',
     body: payload,

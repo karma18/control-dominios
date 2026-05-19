@@ -192,6 +192,35 @@ async function list(filters = {}) {
     });
   }
 
+  if (filters.domain_provider_id) {
+    baseQuery.where('d.domain_provider_id', filters.domain_provider_id);
+  }
+
+  if (filters.domain_extension_id) {
+    baseQuery.where('d.domain_extension_id', filters.domain_extension_id);
+  }
+
+  if (filters.domain_type_id) {
+    baseQuery.where('d.domain_type_id', filters.domain_type_id);
+  }
+
+  if (filters.domain_action_id) {
+    baseQuery.where('d.domain_action_id', filters.domain_action_id);
+  }
+
+  if (filters.expiration_from) {
+    baseQuery.where('d.expiration_date', '>=', filters.expiration_from);
+  }
+
+  if (filters.expiration_to) {
+    baseQuery.where('d.expiration_date', '<=', filters.expiration_to);
+  }
+
+  if (filters.is_active !== undefined && filters.is_active !== '') {
+    const isActive = filters.is_active === true || filters.is_active === 'true' || filters.is_active === '1';
+    baseQuery.where('d.is_active', isActive);
+  }
+
   const countRow = await baseQuery.clone().count({ total: 'd.id' }).first();
   const rows = await baseQuery
     .clone()

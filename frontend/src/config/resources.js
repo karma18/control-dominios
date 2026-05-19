@@ -43,6 +43,16 @@ export const resources = [
       { key: 'total_usd_amount', label: 'Total USD' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
     ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Domain, provider, extension' },
+      { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders' },
+      { name: 'domain_extension_id', label: 'Extension', type: 'select', reference: 'domainExtensions', labelProperty: 'extension' },
+      { name: 'domain_type_id', label: 'Type', type: 'select', reference: 'domainTypes' },
+      { name: 'domain_action_id', label: 'Action', type: 'select', reference: 'domainActions' },
+      { name: 'expiration_from', label: 'Expiration from', type: 'date' },
+      { name: 'expiration_to', label: 'Expiration to', type: 'date' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
+    ],
     fields: [
       { name: 'domain_name', label: 'Domain name', type: 'text', required: true },
       { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders', required: true },
@@ -71,6 +81,11 @@ export const resources = [
       { key: 'last_login_at', label: 'Last login' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
     ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Name, email, role' },
+      { name: 'role_id', label: 'Role', type: 'select', reference: 'roles' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
+    ],
     fields: [
       { name: 'first_name', label: 'First name', type: 'text', required: true },
       { name: 'last_name', label: 'Last name', type: 'text', required: true },
@@ -92,6 +107,10 @@ export const resources = [
       { key: 'description', label: 'Description' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
     ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Name or description' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
+    ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
       { name: 'description', label: 'Description', type: 'textarea', nullable: true },
@@ -110,6 +129,10 @@ export const resources = [
       { key: 'website_url', label: 'Website' },
       { key: 'support_email', label: 'Support email' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
+    ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Provider, website, email' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -130,6 +153,10 @@ export const resources = [
       { key: 'description', label: 'Description' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
     ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Extension or description' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
+    ],
     fields: [
       { name: 'extension', label: 'Extension', type: 'text', required: true },
       { name: 'description', label: 'Description', type: 'textarea', nullable: true },
@@ -148,6 +175,10 @@ export const resources = [
       { key: 'description', label: 'Description' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
     ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Type or description' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
+    ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
       { name: 'description', label: 'Description', type: 'textarea', nullable: true },
@@ -165,6 +196,10 @@ export const resources = [
       { key: 'name', label: 'Name' },
       { key: 'description', label: 'Description' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
+    ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Action or description' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -186,6 +221,12 @@ export const resources = [
       { key: 'currency_code', label: 'Currency' },
       { key: 'effective_from', label: 'From' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
+    ],
+    filters: [
+      { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders' },
+      { name: 'domain_extension_id', label: 'Extension', type: 'select', reference: 'domainExtensions', labelProperty: 'extension' },
+      { name: 'currency_code', label: 'Currency', type: 'text', placeholder: 'MXN' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
     ],
     fields: [
       { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders', required: true },
@@ -212,6 +253,13 @@ export const resources = [
       { key: 'currency_code', label: 'Currency' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
     ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Service, type, currency' },
+      { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders' },
+      { name: 'service_type', label: 'Type', type: 'select', staticOptions: [{ value: 'dns', label: 'DNS' }, { value: 'security', label: 'Security' }] },
+      { name: 'currency_code', label: 'Currency', type: 'text', placeholder: 'MXN' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
+    ],
     fields: [
       { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders', required: true },
       { name: 'service_type', label: 'Service type', type: 'select', required: true, staticOptions: [{ value: 'dns', label: 'DNS' }, { value: 'security', label: 'Security' }] },
@@ -237,6 +285,11 @@ export const resources = [
       { key: 'vat_rate', label: 'VAT rate' },
       { key: 'effective_from', label: 'From' },
       { key: 'is_active', label: 'Active', type: 'boolean' },
+    ],
+    filters: [
+      { name: 'search', label: 'Search', type: 'search', placeholder: 'Name or currency' },
+      { name: 'base_currency_code', label: 'Base currency', type: 'text', placeholder: 'MXN' },
+      { name: 'is_active', label: 'Status', type: 'select', staticOptions: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] },
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },

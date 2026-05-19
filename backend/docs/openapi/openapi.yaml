@@ -73,6 +73,12 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/Active'
+        - $ref: '#/components/parameters/IsActive'
+        - $ref: '#/components/parameters/DomainProviderId'
+        - $ref: '#/components/parameters/DomainExtensionId'
+        - $ref: '#/components/parameters/ServiceType'
+        - $ref: '#/components/parameters/CurrencyCode'
+        - $ref: '#/components/parameters/BaseCurrencyCode'
       responses:
         '200':
           description: Catalog records.
@@ -157,6 +163,8 @@ paths:
         - $ref: '#/components/parameters/Search'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/RoleId'
+        - $ref: '#/components/parameters/IsActive'
       responses:
         '200':
           description: Users.
@@ -241,6 +249,13 @@ paths:
         - $ref: '#/components/parameters/Search'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/DomainProviderId'
+        - $ref: '#/components/parameters/DomainExtensionId'
+        - $ref: '#/components/parameters/DomainTypeId'
+        - $ref: '#/components/parameters/DomainActionId'
+        - $ref: '#/components/parameters/ExpirationFrom'
+        - $ref: '#/components/parameters/ExpirationTo'
+        - $ref: '#/components/parameters/IsActive'
       responses:
         '200':
           description: Domain inventory.
@@ -378,6 +393,78 @@ components:
       name: active
       schema:
         type: boolean
+      description: Legacy active-state filter for catalog resources.
+    IsActive:
+      in: query
+      name: is_active
+      schema:
+        type: boolean
+      description: Filter records by active state.
+    RoleId:
+      in: query
+      name: role_id
+      schema:
+        type: integer
+      description: Filter users by role.
+    DomainProviderId:
+      in: query
+      name: domain_provider_id
+      schema:
+        type: integer
+      description: Filter records by domain provider.
+    DomainExtensionId:
+      in: query
+      name: domain_extension_id
+      schema:
+        type: integer
+      description: Filter records by domain extension.
+    DomainTypeId:
+      in: query
+      name: domain_type_id
+      schema:
+        type: integer
+      description: Filter domains by domain type.
+    DomainActionId:
+      in: query
+      name: domain_action_id
+      schema:
+        type: integer
+      description: Filter domains by follow-up action.
+    ServiceType:
+      in: query
+      name: service_type
+      schema:
+        type: string
+        enum:
+          - dns
+          - security
+      description: Filter provider service prices by service type.
+    CurrencyCode:
+      in: query
+      name: currency_code
+      schema:
+        type: string
+      description: Filter price catalogs by currency code.
+    BaseCurrencyCode:
+      in: query
+      name: base_currency_code
+      schema:
+        type: string
+      description: Filter financial settings by base currency code.
+    ExpirationFrom:
+      in: query
+      name: expiration_from
+      schema:
+        type: string
+        format: date
+      description: Filter domains expiring on or after this date.
+    ExpirationTo:
+      in: query
+      name: expiration_to
+      schema:
+        type: string
+        format: date
+      description: Filter domains expiring on or before this date.
   schemas:
     HealthResponse:
       type: object

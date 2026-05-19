@@ -29,12 +29,30 @@ function applySearch(query, config, search) {
 }
 
 function applyActiveFilter(query, config, active) {
-  if (active === undefined || !config.fields.is_active) {
+  if ((active === undefined && config.fields.is_active) || !config.fields.is_active) {
     return;
   }
 
   const isActive = active === true || active === 'true' || active === '1';
   query.where('is_active', isActive);
+}
+
+function applyFieldFilters(query, config, filters) {
+  Object.keys(config.fields).forEach((fieldName) => {
+    const value = filters[fieldName];
+
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+
+    if (fieldName === 'is_active') {
+      const isActive = value === true || value === 'true' || value === '1';
+      query.where(fieldName, isActive);
+      return;
+    }
+
+    query.where(fieldName, value);
+  });
 }
 
 async function list(resourceName, filters = {}) {
@@ -46,6 +64,7 @@ async function list(resourceName, filters = {}) {
 
   applySearch(baseQuery, config, filters.search);
   applyActiveFilter(baseQuery, config, filters.active);
+  applyFieldFilters(baseQuery, config, filters);
 
   const countRow = await baseQuery.clone().count({ total: 'id' }).first();
   const data = await baseQuery

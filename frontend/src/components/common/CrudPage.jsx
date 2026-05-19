@@ -34,6 +34,13 @@ function buildInitialForm(resource) {
   }), {});
 }
 
+function buildInitialFilters(resource) {
+  return (resource.filters || []).reduce((filters, field) => ({
+    ...filters,
+    [field.name]: '',
+  }), {});
+}
+
 function getOptionLabel(field, option, references) {
   if (field.optionLabel) {
     return field.optionLabel(option, references);
@@ -141,13 +148,52 @@ function FieldInput({
   );
 }
 
+function FilterInput({
+  field,
+  value,
+  onChange,
+  references,
+}) {
+  const commonProps = {
+    id: `filter-${field.name}`,
+    name: field.name,
+    value: value ?? '',
+    onChange: (event) => onChange(field.name, event.target.value),
+  };
+
+  if (field.type === 'select') {
+    const sourceOptions = field.staticOptions || references[field.reference] || [];
+    const options = field.filter ? sourceOptions.filter(field.filter) : sourceOptions;
+
+    return (
+      <select {...commonProps}>
+        <option value="">All</option>
+        {options.map((option) => (
+          <option key={option.id || option.value} value={option.id || option.value}>
+            {option.label || getOptionLabel(field, option, references)}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <input
+      {...commonProps}
+      type={field.type === 'search' ? 'search' : field.type}
+      placeholder={field.placeholder || field.label}
+    />
+  );
+}
+
 export function CrudPage({ resource }) {
   const [records, setRecords] = useState([]);
   const [references, setReferences] = useState({});
   const [meta, setMeta] = useState({ total: 0 });
   const [form, setForm] = useState(() => buildInitialForm(resource));
+  const [filters, setFilters] = useState(() => buildInitialFilters(resource));
   const [editingRecord, setEditingRecord] = useState(null);
-  const [search, setSearch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -155,6 +201,11 @@ export function CrudPage({ resource }) {
   const requiredReferences = useMemo(() => {
     const names = new Set();
     resource.fields.forEach((field) => {
+      if (field.reference) {
+        names.add(field.reference);
+      }
+    });
+    (resource.filters || []).forEach((field) => {
       if (field.reference) {
         names.add(field.reference);
       }
@@ -167,7 +218,7 @@ export function CrudPage({ resource }) {
     return Array.from(names);
   }, [resource]);
 
-  async function loadRecords(nextSearch = search) {
+  async function loadRecords(nextFilters = filters) {
     setIsLoading(true);
     setError('');
 
@@ -175,11 +226,11 @@ export function CrudPage({ resource }) {
       let result;
 
       if (resource.kind === 'catalog') {
-        result = await apiClient.listCatalog(resource.slug, nextSearch);
+        result = await apiClient.listCatalog(resource.slug, nextFilters);
       } else if (resource.kind === 'users') {
-        result = await apiClient.listUsers(nextSearch);
+        result = await apiClient.listUsers(nextFilters);
       } else {
-        result = await apiClient.listDomains(nextSearch);
+        result = await apiClient.listDomains(nextFilters);
       }
 
       setRecords(result.data);
@@ -208,9 +259,11 @@ export function CrudPage({ resource }) {
 
   useEffect(() => {
     setForm(buildInitialForm(resource));
+    setFilters(buildInitialFilters(resource));
     setEditingRecord(null);
+    setIsModalOpen(false);
     loadReferences().catch((referenceError) => setError(referenceError.message));
-    loadRecords('').catch((recordError) => setError(recordError.message));
+    loadRecords(buildInitialFilters(resource)).catch((recordError) => setError(recordError.message));
   }, [resource.key]);
 
   function handleChange(name, value) {
@@ -218,6 +271,19 @@ export function CrudPage({ resource }) {
       ...currentForm,
       [name]: value,
     }));
+  }
+
+  function handleFilterChange(name, value) {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [name]: value,
+    }));
+  }
+
+  function handleCreate() {
+    setEditingRecord(null);
+    setForm(buildInitialForm(resource));
+    setIsModalOpen(true);
   }
 
   function handleEdit(record) {
@@ -234,11 +300,13 @@ export function CrudPage({ resource }) {
 
     setEditingRecord(record);
     setForm(nextForm);
+    setIsModalOpen(true);
   }
 
   function handleCancel() {
     setEditingRecord(null);
     setForm(buildInitialForm(resource));
+    setIsModalOpen(false);
   }
 
   async function handleSubmit(event) {
@@ -268,7 +336,7 @@ export function CrudPage({ resource }) {
       }
 
       handleCancel();
-      await Promise.all([loadReferences(), loadRecords(search)]);
+      await Promise.all([loadReferences(), loadRecords(filters)]);
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -292,15 +360,21 @@ export function CrudPage({ resource }) {
         await apiClient.deleteDomain(record.id);
       }
 
-      await loadRecords(search);
+      await loadRecords(filters);
     } catch (deleteError) {
       setError(deleteError.message);
     }
   }
 
-  function handleSearch(event) {
+  function handleFilterSubmit(event) {
     event.preventDefault();
-    loadRecords(search);
+    loadRecords(filters);
+  }
+
+  function handleFilterReset() {
+    const initialFilters = buildInitialFilters(resource);
+    setFilters(initialFilters);
+    loadRecords(initialFilters);
   }
 
   return (
@@ -311,59 +385,45 @@ export function CrudPage({ resource }) {
           <h1>{resource.title}</h1>
           <span>{resource.subtitle}</span>
         </div>
-        <button className="secondary-button" type="button" onClick={() => loadRecords(search)}>
-          <RefreshCw size={16} />
-          Refresh
-        </button>
+        <div className="page-actions">
+          <button className="secondary-button" type="button" onClick={() => loadRecords(filters)}>
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+          <button className="primary-button" type="button" onClick={handleCreate}>
+            <Plus size={17} />
+            New record
+          </button>
+        </div>
       </section>
 
       {error && <div className="alert-error">{error}</div>}
 
       <section className="crud-grid">
-        <form className="panel data-form" onSubmit={handleSubmit}>
-          <div className="panel-header">
-            <h2>{editingRecord ? 'Edit record' : 'New record'}</h2>
-            {editingRecord && (
-              <button className="icon-button" type="button" onClick={handleCancel} title="Cancel">
-                <X size={18} />
-              </button>
-            )}
-          </div>
-
-          <div className="form-grid">
-            {resource.fields.map((field) => (
-              <label
-                className={field.type === 'checkbox' ? 'checkbox-field' : 'form-field'}
-                key={field.name}
-                htmlFor={field.name}
-              >
-                <span>{field.label}</span>
-                <FieldInput
-                  field={field}
-                  value={form[field.name]}
-                  onChange={handleChange}
-                  references={references}
-                  editingRecord={editingRecord}
-                />
-              </label>
-            ))}
-          </div>
-
-          <button className="primary-button" type="submit" disabled={isSaving}>
-            {editingRecord ? <Save size={17} /> : <Plus size={17} />}
-            {isSaving ? 'Saving' : editingRecord ? 'Save changes' : 'Create'}
-          </button>
-        </form>
-
         <section className="panel data-table-panel">
           <div className="table-toolbar">
-            <form className="table-search" onSubmit={handleSearch}>
-              <Search size={16} />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search records"
-              />
+            <form className="filters-form" onSubmit={handleFilterSubmit}>
+              {(resource.filters || []).map((field) => (
+                <label className="filter-field" key={field.name} htmlFor={`filter-${field.name}`}>
+                  <span>{field.label}</span>
+                  <FilterInput
+                    field={field}
+                    value={filters[field.name]}
+                    onChange={handleFilterChange}
+                    references={references}
+                  />
+                </label>
+              ))}
+              <div className="filter-actions">
+                <button className="secondary-button" type="button" onClick={handleFilterReset}>
+                  <X size={16} />
+                  Clear
+                </button>
+                <button className="primary-button" type="submit">
+                  <Search size={16} />
+                  Search
+                </button>
+              </div>
             </form>
           </div>
 
@@ -409,6 +469,54 @@ export function CrudPage({ resource }) {
           </div>
         </section>
       </section>
+
+      {isModalOpen && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="record-modal-title">
+            <form className="data-form" onSubmit={handleSubmit}>
+              <div className="modal-header">
+                <div>
+                  <p className="eyebrow">{resource.title}</p>
+                  <h2 id="record-modal-title">{editingRecord ? 'Edit record' : 'New record'}</h2>
+                </div>
+                <button className="icon-button" type="button" onClick={handleCancel} title="Close">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="form-grid modal-form-grid">
+                {resource.fields.map((field) => (
+                  <label
+                    className={field.type === 'checkbox' ? 'checkbox-field' : 'form-field'}
+                    key={field.name}
+                    htmlFor={field.name}
+                  >
+                    <span>{field.label}</span>
+                    <FieldInput
+                      field={field}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      references={references}
+                      editingRecord={editingRecord}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <div className="modal-actions">
+                <button className="secondary-button" type="button" onClick={handleCancel}>
+                  <X size={16} />
+                  Cancel
+                </button>
+                <button className="primary-button" type="submit" disabled={isSaving}>
+                  {editingRecord ? <Save size={17} /> : <Plus size={17} />}
+                  {isSaving ? 'Saving' : editingRecord ? 'Save changes' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
