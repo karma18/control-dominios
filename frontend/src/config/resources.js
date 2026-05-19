@@ -11,12 +11,6 @@ function optionName(options, key, id, property = 'name') {
   return record?.[property] || `#${id}`;
 }
 
-function priceLabel(item, options) {
-  const provider = optionName(options, 'domainProviders', item.domain_provider_id);
-  const extension = optionName(options, 'domainExtensions', item.domain_extension_id, 'extension');
-  return `${provider} / ${extension} - ${item.currency_code} ${item.price_amount}`;
-}
-
 function servicePriceLabel(item, options) {
   const provider = optionName(options, 'domainProviders', item.domain_provider_id);
   return `${provider} / ${item.service_name} - ${item.currency_code} ${item.price_amount}`;
@@ -28,7 +22,6 @@ export const referenceDefinitions = {
   domainExtensions: { kind: 'catalog', slug: 'domain-extensions' },
   domainTypes: { kind: 'catalog', slug: 'domain-types' },
   domainActions: { kind: 'catalog', slug: 'domain-actions' },
-  providerExtensionPrices: { kind: 'catalog', slug: 'provider-extension-prices' },
   providerServicePrices: { kind: 'catalog', slug: 'provider-service-prices' },
 };
 
@@ -54,7 +47,6 @@ export const resources = [
       { name: 'domain_name', label: 'Domain name', type: 'text', required: true },
       { name: 'domain_provider_id', label: 'Provider', type: 'select', reference: 'domainProviders', required: true },
       { name: 'domain_extension_id', label: 'Extension', type: 'select', reference: 'domainExtensions', labelProperty: 'extension', required: true },
-      { name: 'provider_extension_price_id', label: 'Extension price', type: 'select', reference: 'providerExtensionPrices', optionLabel: priceLabel, required: true },
       { name: 'domain_type_id', label: 'Type', type: 'select', reference: 'domainTypes', required: true },
       { name: 'domain_action_id', label: 'Action', type: 'select', reference: 'domainActions', required: true },
       { name: 'dns_service_price_id', label: 'DNS service', type: 'select', reference: 'providerServicePrices', optionLabel: servicePriceLabel, filter: (item) => item.service_type === 'dns', nullable: true },

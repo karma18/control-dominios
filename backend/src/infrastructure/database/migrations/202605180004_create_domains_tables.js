@@ -4,7 +4,6 @@ exports.up = async function up(knex) {
     table.string('domain_name', 255).notNullable();
     table.integer('domain_provider_id').unsigned().notNullable();
     table.integer('domain_extension_id').unsigned().notNullable();
-    table.integer('provider_extension_price_id').unsigned().notNullable();
     table.integer('domain_type_id').unsigned().notNullable();
     table.integer('domain_action_id').unsigned().notNullable();
     table.date('expiration_date').notNullable();
@@ -21,15 +20,6 @@ exports.up = async function up(knex) {
     table.foreign('domain_extension_id', 'fk_domains_extension')
       .references('id')
       .inTable('domain_extensions')
-      .onUpdate('CASCADE')
-      .onDelete('RESTRICT');
-
-    table.foreign(
-      ['domain_provider_id', 'domain_extension_id', 'provider_extension_price_id'],
-      'fk_domains_provider_extension_price',
-    )
-      .references(['domain_provider_id', 'domain_extension_id', 'id'])
-      .inTable('provider_extension_prices')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
 

@@ -490,7 +490,6 @@ components:
         - domain_name
         - domain_provider_id
         - domain_extension_id
-        - provider_extension_price_id
         - domain_type_id
         - domain_action_id
         - expiration_date
@@ -500,8 +499,6 @@ components:
         domain_provider_id:
           type: integer
         domain_extension_id:
-          type: integer
-        provider_extension_price_id:
           type: integer
         domain_type_id:
           type: integer
@@ -534,6 +531,9 @@ components:
               type: string
             domain_price_amount:
               type: number
+            current_extension_price_id:
+              type: integer
+              nullable: true
             dns_price_amount:
               type: number
             security_price_amount:

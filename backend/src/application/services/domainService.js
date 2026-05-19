@@ -9,7 +9,6 @@ const domainFields = {
   domain_name: { required: true },
   domain_provider_id: { required: true, type: 'number' },
   domain_extension_id: { required: true, type: 'number' },
-  provider_extension_price_id: { required: true, type: 'number' },
   domain_type_id: { required: true, type: 'number' },
   domain_action_id: { required: true, type: 'number' },
   expiration_date: { required: true },
@@ -29,7 +28,6 @@ function domainsQuery() {
   return db('domains as d')
     .leftJoin('domain_providers as p', 'd.domain_provider_id', 'p.id')
     .leftJoin('domain_extensions as e', 'd.domain_extension_id', 'e.id')
-    .leftJoin('provider_extension_prices as ep', 'd.provider_extension_price_id', 'ep.id')
     .leftJoin('domain_types as t', 'd.domain_type_id', 't.id')
     .leftJoin('domain_actions as a', 'd.domain_action_id', 'a.id');
 }
@@ -40,7 +38,6 @@ function selectDomainColumns() {
     'd.domain_name',
     'd.domain_provider_id',
     'd.domain_extension_id',
-    'd.provider_extension_price_id',
     'd.domain_type_id',
     'd.domain_action_id',
     'd.expiration_date',
@@ -50,8 +47,6 @@ function selectDomainColumns() {
     'd.updated_at',
     'p.name as provider_name',
     'e.extension as extension',
-    'ep.price_amount as domain_price_amount',
-    'ep.currency_code as domain_price_currency_code',
     't.name as domain_type_name',
     'a.name as domain_action_name',
   ];
@@ -89,10 +84,51 @@ async function getServicesByDomainIds(domainIds) {
   }, new Map());
 }
 
-function attachComputedPrices(domain, services, financialSettings) {
+async function getCurrentExtensionPrices(domains) {
+  const pairs = domains.map((domain) => [
+    domain.domain_provider_id,
+    domain.domain_extension_id,
+  ]);
+
+  if (!pairs.length) {
+    return new Map();
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = await db('provider_extension_prices')
+    .select([
+      'id',
+      'domain_provider_id',
+      'domain_extension_id',
+      'price_amount',
+      'currency_code',
+      'effective_from',
+    ])
+    .whereIn(['domain_provider_id', 'domain_extension_id'], pairs)
+    .where({ is_active: true })
+    .where('effective_from', '<=', today)
+    .where((builder) => {
+      builder
+        .whereNull('effective_to')
+        .orWhere('effective_to', '>=', today);
+    })
+    .orderBy('effective_from', 'desc');
+
+  return rows.reduce((map, row) => {
+    const key = `${row.domain_provider_id}:${row.domain_extension_id}`;
+
+    if (!map.has(key)) {
+      map.set(key, row);
+    }
+
+    return map;
+  }, new Map());
+}
+
+function attachComputedPrices(domain, services, financialSettings, extensionPrice) {
   const dnsService = services?.dns || null;
   const securityService = services?.security || null;
-  const domainPrice = toNumber(domain.domain_price_amount);
+  const domainPrice = toNumber(extensionPrice?.price_amount);
   const dnsPrice = toNumber(dnsService?.price_amount);
   const securityPrice = toNumber(securityService?.price_amount);
   const subtotalAmount = domainPrice + dnsPrice + securityPrice;
@@ -103,6 +139,9 @@ function attachComputedPrices(domain, services, financialSettings) {
 
   return {
     ...domain,
+    current_extension_price_id: extensionPrice?.id || null,
+    domain_price_amount: roundMoney(domainPrice),
+    domain_price_currency_code: extensionPrice?.currency_code || null,
     dns_service_price_id: dnsService?.provider_service_price_id || null,
     security_service_price_id: securityService?.provider_service_price_id || null,
     dns_price_amount: roundMoney(dnsPrice),
@@ -119,13 +158,21 @@ function attachComputedPrices(domain, services, financialSettings) {
 
 async function decorateDomains(rows) {
   const servicesByDomain = await getServicesByDomainIds(rows.map((row) => row.id));
+  const extensionPricesByPair = await getCurrentExtensionPrices(rows);
   const financialSettings = await getCurrentFinancialSettings();
 
-  return rows.map((row) => attachComputedPrices(
-    row,
-    servicesByDomain.get(row.id),
-    financialSettings,
-  ));
+  return rows.map((row) => {
+    const extensionPrice = extensionPricesByPair.get(
+      `${row.domain_provider_id}:${row.domain_extension_id}`,
+    );
+
+    return attachComputedPrices(
+      row,
+      servicesByDomain.get(row.id),
+      financialSettings,
+      extensionPrice,
+    );
+  });
 }
 
 async function list(filters = {}) {
