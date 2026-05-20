@@ -34,13 +34,13 @@ export function LoginPage({ onLoginSuccess }) {
       <section className="login-panel">
         <div className="brand-mark">
           <img src={autocomLogo} alt="AUTOCOM" />
-          <span>Domain Control</span>
+          <span>Control de Dominios</span>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div>
-            <p className="eyebrow">Domain inventory</p>
-            <h1>Sign in</h1>
+            <p className="eyebrow">Inventario de dominios</p>
+            <h1>Iniciar sesión</h1>
           </div>
 
           {error && <div className="alert-error">{error}</div>}
@@ -51,7 +51,7 @@ export function LoginPage({ onLoginSuccess }) {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="Email"
+              placeholder="Correo"
               autoComplete="email"
               required
             />
@@ -63,7 +63,7 @@ export function LoginPage({ onLoginSuccess }) {
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
+              placeholder="Contraseña"
               autoComplete="current-password"
               required
             />
@@ -71,12 +71,10 @@ export function LoginPage({ onLoginSuccess }) {
 
           <button className="primary-button" type="submit" disabled={isSubmitting}>
             <KeyRound size={17} />
-            {isSubmitting ? 'Signing in' : 'Login'}
+            {isSubmitting ? 'Iniciando sesión' : 'Entrar'}
           </button>
         </form>
       </section>
-
-      
     </main>
   );
 }

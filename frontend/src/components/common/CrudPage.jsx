@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Download,
   Edit3,
   Plus,
   RefreshCw,
@@ -49,11 +50,27 @@ function getOptionLabel(field, option, references) {
   return option[field.labelProperty || 'name'] || option.name || option.extension || `#${option.id}`;
 }
 
+function formatDate(value) {
+  if (!value) {
+    return '-';
+  }
+
+  if (typeof value === 'string') {
+    return value.slice(0, 10);
+  }
+
+  return new Date(value).toISOString().slice(0, 10);
+}
+
 function formatCell(row, column, references) {
   const value = row[column.key];
 
   if (column.type === 'boolean') {
-    return value ? 'Yes' : 'No';
+    return value ? 'Sí' : 'No';
+  }
+
+  if (column.type === 'date' || column.type === 'datetime') {
+    return formatDate(value);
   }
 
   if (column.reference) {
@@ -67,6 +84,27 @@ function formatCell(row, column, references) {
   }
 
   return value;
+}
+
+function escapeSpreadsheetCell(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
 
 function normalizePayload(resource, form, editingRecord) {
@@ -117,7 +155,7 @@ function FieldInput({
 
     return (
       <select {...commonProps}>
-        <option value="">Select</option>
+        <option value="">Seleccione</option>
         {options.map((option) => (
           <option key={option.id || option.value} value={option.id || option.value}>
             {option.label || getOptionLabel(field, option, references)}
@@ -167,7 +205,7 @@ function FilterInput({
 
     return (
       <select {...commonProps}>
-        <option value="">All</option>
+        <option value="">Todos</option>
         {options.map((option) => (
           <option key={option.id || option.value} value={option.id || option.value}>
             {option.label || getOptionLabel(field, option, references)}
@@ -309,6 +347,36 @@ export function CrudPage({ resource }) {
     setIsModalOpen(false);
   }
 
+  function handleExport() {
+    const headers = resource.columns.map((column) => `<th>${escapeSpreadsheetCell(column.label)}</th>`).join('');
+    const rows = records.map((record) => {
+      const cells = resource.columns
+        .map((column) => `<td>${escapeSpreadsheetCell(formatCell(record, column, references))}</td>`)
+        .join('');
+
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    const workbook = `
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+        </head>
+        <body>
+          <table>
+            <thead><tr>${headers}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    downloadFile(
+      workbook,
+      `inventario-dominios-${formatDate(new Date())}.xls`,
+      'application/vnd.ms-excel;charset=utf-8',
+    );
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
@@ -345,7 +413,7 @@ export function CrudPage({ resource }) {
   }
 
   async function handleDelete(record) {
-    if (!window.confirm(`Delete ${resource.title} record #${record.id}?`)) {
+    if (!window.confirm(`¿Eliminar el registro #${record.id} de ${resource.title}?`)) {
       return;
     }
 
@@ -381,18 +449,24 @@ export function CrudPage({ resource }) {
     <main className="content-area">
       <section className="page-heading">
         <div>
-          <p className="eyebrow">{meta.total} records</p>
+          <p className="eyebrow">{meta.total} registros</p>
           <h1>{resource.title}</h1>
           <span>{resource.subtitle}</span>
         </div>
         <div className="page-actions">
+          {resource.key === 'domains' && (
+            <button className="secondary-button" type="button" onClick={handleExport} disabled={!records.length}>
+              <Download size={16} />
+              Exportar Excel
+            </button>
+          )}
           <button className="secondary-button" type="button" onClick={() => loadRecords(filters)}>
             <RefreshCw size={16} />
-            Refresh
+            Actualizar
           </button>
           <button className="primary-button" type="button" onClick={handleCreate}>
             <Plus size={17} />
-            New record
+            Nuevo registro
           </button>
         </div>
       </section>
@@ -417,11 +491,11 @@ export function CrudPage({ resource }) {
               <div className="filter-actions">
                 <button className="secondary-button" type="button" onClick={handleFilterReset}>
                   <X size={16} />
-                  Clear
+                  Limpiar
                 </button>
                 <button className="primary-button" type="submit">
                   <Search size={16} />
-                  Search
+                  Buscar
                 </button>
               </div>
             </form>
@@ -434,7 +508,7 @@ export function CrudPage({ resource }) {
                   {resource.columns.map((column) => (
                     <th key={column.key}>{column.label}</th>
                   ))}
-                  <th>Actions</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -445,10 +519,10 @@ export function CrudPage({ resource }) {
                     ))}
                     <td>
                       <div className="row-actions">
-                        <button className="icon-button" type="button" onClick={() => handleEdit(record)} title="Edit">
+                        <button className="icon-button" type="button" onClick={() => handleEdit(record)} title="Editar">
                           <Edit3 size={16} />
                         </button>
-                        <button className="icon-button danger" type="button" onClick={() => handleDelete(record)} title="Delete">
+                        <button className="icon-button danger" type="button" onClick={() => handleDelete(record)} title="Eliminar">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -459,7 +533,7 @@ export function CrudPage({ resource }) {
                   <tr>
                     <td colSpan={resource.columns.length + 1}>
                       <div className="empty-state">
-                        {isLoading ? 'Loading records' : 'No records found'}
+                        {isLoading ? 'Cargando registros' : 'No se encontraron registros'}
                       </div>
                     </td>
                   </tr>
@@ -477,9 +551,9 @@ export function CrudPage({ resource }) {
               <div className="modal-header">
                 <div>
                   <p className="eyebrow">{resource.title}</p>
-                  <h2 id="record-modal-title">{editingRecord ? 'Edit record' : 'New record'}</h2>
+                  <h2 id="record-modal-title">{editingRecord ? 'Editar registro' : 'Nuevo registro'}</h2>
                 </div>
-                <button className="icon-button" type="button" onClick={handleCancel} title="Close">
+                <button className="icon-button" type="button" onClick={handleCancel} title="Cerrar">
                   <X size={18} />
                 </button>
               </div>
@@ -506,11 +580,11 @@ export function CrudPage({ resource }) {
               <div className="modal-actions">
                 <button className="secondary-button" type="button" onClick={handleCancel}>
                   <X size={16} />
-                  Cancel
+                  Cancelar
                 </button>
                 <button className="primary-button" type="submit" disabled={isSaving}>
                   {editingRecord ? <Save size={17} /> : <Plus size={17} />}
-                  {isSaving ? 'Saving' : editingRecord ? 'Save changes' : 'Create'}
+                  {isSaving ? 'Guardando' : editingRecord ? 'Guardar cambios' : 'Crear'}
                 </button>
               </div>
             </form>

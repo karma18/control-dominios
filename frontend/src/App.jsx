@@ -67,7 +67,7 @@ function AppContent() {
   }, [isAuthenticated, isBootstrapping, path]);
 
   if (isBootstrapping) {
-    return <div className="boot-screen">Loading</div>;
+    return <div className="boot-screen">Cargando</div>;
   }
 
   if (!isAuthenticated) {
