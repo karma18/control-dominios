@@ -3,6 +3,7 @@ import {
   BadgeDollarSign,
   Bell,
   Building2,
+  ChevronDown,
   Database,
   Gauge,
   Globe2,
@@ -92,10 +93,11 @@ export function DashboardLayout({
             );
           })}
 
-          <details className="sidebar-group" open>
+          <details className="sidebar-group">
             <summary>
               <Database size={17} />
               <span>Catálogos</span>
+              <ChevronDown className="sidebar-group-caret" size={16} />
             </summary>
 
             <div className="sidebar-group-items">
@@ -128,6 +130,16 @@ export function DashboardLayout({
 
       <div className="workspace">
         <header className="topbar">
+          <button
+            className="icon-button menu-button"
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            title="Abrir menú"
+            aria-controls="main-menu"
+            aria-expanded={isSidebarOpen}
+          >
+            <Menu size={19} />
+          </button>
           <div className="topbar-search">
             <Search size={17} />
             <input placeholder="Buscar" />
@@ -144,16 +156,6 @@ export function DashboardLayout({
               <LogOut size={18} />
             </button>
           </div>
-          <button
-            className="icon-button menu-button"
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            title="Abrir menú"
-            aria-controls="main-menu"
-            aria-expanded={isSidebarOpen}
-          >
-            <Menu size={19} />
-          </button>
         </header>
 
         {children}

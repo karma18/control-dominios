@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ChevronLeft,
+  ChevronRight,
   Download,
   Edit3,
   Plus,
@@ -11,6 +13,8 @@ import {
 } from 'lucide-react';
 import { referenceDefinitions } from '../../config/resources';
 import { apiClient } from '../../services/apiClient';
+
+const LIST_PAGE_SIZE = 100;
 
 function getInitialValue(field) {
   if (typeof field.defaultValue === 'function') {
@@ -230,6 +234,8 @@ export function CrudPage({ resource }) {
   const [meta, setMeta] = useState({ total: 0 });
   const [form, setForm] = useState(() => buildInitialForm(resource));
   const [filters, setFilters] = useState(() => buildInitialFilters(resource));
+  const [appliedFilters, setAppliedFilters] = useState(() => buildInitialFilters(resource));
+  const [page, setPage] = useState(1);
   const [editingRecord, setEditingRecord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState('');
@@ -257,23 +263,31 @@ export function CrudPage({ resource }) {
     return Array.from(names);
   }, [resource]);
 
-  async function loadRecords(nextFilters = filters) {
+  async function loadRecords(nextFilters = appliedFilters, nextPage = page) {
     setIsLoading(true);
     setError('');
 
     try {
       let result;
+      const requestFilters = {
+        ...nextFilters,
+        page: nextPage,
+        pageSize: LIST_PAGE_SIZE,
+      };
 
       if (resource.kind === 'catalog') {
-        result = await apiClient.listCatalog(resource.slug, nextFilters);
+        result = await apiClient.listCatalog(resource.slug, requestFilters);
       } else if (resource.kind === 'users') {
-        result = await apiClient.listUsers(nextFilters);
+        result = await apiClient.listUsers(requestFilters);
       } else {
-        result = await apiClient.listDomains(nextFilters);
+        result = await apiClient.listDomains(requestFilters);
       }
 
-      setRecords(result.data);
-      setMeta(result.meta);
+      const nextRecords = result.data || [];
+
+      setRecords(nextRecords);
+      setMeta(result.meta || { page: nextPage, pageSize: LIST_PAGE_SIZE, total: nextRecords.length });
+      setPage(Number(result.meta?.page || nextPage));
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -289,7 +303,7 @@ export function CrudPage({ resource }) {
         return [name, []];
       }
 
-      const result = await apiClient.listCatalog(definition.slug);
+      const result = await apiClient.listAllCatalog(definition.slug);
       return [name, result.data];
     }));
 
@@ -298,11 +312,15 @@ export function CrudPage({ resource }) {
 
   useEffect(() => {
     setForm(buildInitialForm(resource));
-    setFilters(buildInitialFilters(resource));
+    const initialFilters = buildInitialFilters(resource);
+
+    setFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+    setPage(1);
     setEditingRecord(null);
     setIsModalOpen(false);
     loadReferences().catch((referenceError) => setError(referenceError.message));
-    loadRecords(buildInitialFilters(resource)).catch((recordError) => setError(recordError.message));
+    loadRecords(initialFilters, 1).catch((recordError) => setError(recordError.message));
   }, [resource.key]);
 
   function handleChange(name, value) {
@@ -353,7 +371,7 @@ export function CrudPage({ resource }) {
     setIsExporting(true);
 
     try {
-      const result = await apiClient.listAllDomains(filters);
+      const result = await apiClient.listAllDomains(appliedFilters);
       const exportRecords = result.data || [];
 
       if (!exportRecords.length) {
@@ -422,7 +440,7 @@ export function CrudPage({ resource }) {
       }
 
       handleCancel();
-      await Promise.all([loadReferences(), loadRecords(filters)]);
+      await Promise.all([loadReferences(), loadRecords(appliedFilters, page)]);
     } catch (saveError) {
       setError(saveError.message);
     } finally {
@@ -446,7 +464,8 @@ export function CrudPage({ resource }) {
         await apiClient.deleteDomain(record.id);
       }
 
-      await loadRecords(filters);
+      const nextPage = records.length === 1 && page > 1 ? page - 1 : page;
+      await loadRecords(appliedFilters, nextPage);
     } catch (deleteError) {
       setError(deleteError.message);
     }
@@ -454,13 +473,30 @@ export function CrudPage({ resource }) {
 
   function handleFilterSubmit(event) {
     event.preventDefault();
-    loadRecords(filters);
+    setAppliedFilters(filters);
+    loadRecords(filters, 1);
   }
 
   function handleFilterReset() {
     const initialFilters = buildInitialFilters(resource);
     setFilters(initialFilters);
-    loadRecords(initialFilters);
+    setAppliedFilters(initialFilters);
+    loadRecords(initialFilters, 1);
+  }
+
+  const currentPage = Number(meta.page || page || 1);
+  const pageSize = Number(meta.pageSize || LIST_PAGE_SIZE);
+  const totalRecords = Number(meta.total || 0);
+  const totalPages = Math.max(Math.ceil(totalRecords / pageSize), 1);
+  const pageStart = totalRecords ? ((currentPage - 1) * pageSize) + 1 : 0;
+  const pageEnd = Math.min(currentPage * pageSize, totalRecords);
+
+  function handlePageChange(nextPage) {
+    const boundedPage = Math.min(Math.max(nextPage, 1), totalPages);
+
+    if (boundedPage !== currentPage) {
+      loadRecords(appliedFilters, boundedPage);
+    }
   }
 
   return (
@@ -473,12 +509,12 @@ export function CrudPage({ resource }) {
         </div>
         <div className="page-actions">
           {resource.key === 'domains' && (
-            <button className="secondary-button" type="button" onClick={handleExport} disabled={!records.length || isExporting}>
+            <button className="secondary-button" type="button" onClick={handleExport} disabled={!totalRecords || isExporting}>
               <Download size={16} />
               {isExporting ? 'Exportando' : 'Exportar Excel'}
             </button>
           )}
-          <button className="secondary-button" type="button" onClick={() => loadRecords(filters)}>
+          <button className="secondary-button" type="button" onClick={() => loadRecords(appliedFilters, page)}>
             <RefreshCw size={16} />
             Actualizar
           </button>
@@ -558,6 +594,33 @@ export function CrudPage({ resource }) {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="pagination-bar">
+            <span>
+              {totalRecords ? `${pageStart}-${pageEnd} de ${totalRecords} registros` : '0 registros'}
+            </span>
+            <div>
+              <button
+                className="secondary-button pagination-button"
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={isLoading || currentPage <= 1}
+              >
+                <ChevronLeft size={16} />
+                Anterior
+              </button>
+              <strong>Página {currentPage} de {totalPages}</strong>
+              <button
+                className="secondary-button pagination-button"
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={isLoading || currentPage >= totalPages}
+              >
+                Siguiente
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </section>
       </section>

@@ -192,74 +192,6 @@
     @apply text-mint-500;
   }
 
-  .login-aside {
-    @apply hidden min-h-[560px] overflow-hidden rounded-lg border border-white/[0.2] p-6 text-white shadow-panel lg:grid;
-    background:
-      linear-gradient(135deg, rgba(31, 35, 40, 0.98), rgba(48, 52, 58, 0.92)),
-      linear-gradient(90deg, rgba(0, 168, 135, 0.24), rgba(35, 167, 201, 0.12));
-    align-content: space-between;
-  }
-
-  .login-aside-header {
-    @apply grid gap-2;
-  }
-
-  .login-aside-header span {
-    @apply text-xs font-black uppercase tracking-normal text-mint-500;
-  }
-
-  .login-aside-header strong {
-    @apply max-w-[10ch] text-5xl font-black leading-none tracking-normal;
-  }
-
-  .login-kpi-grid {
-    @apply grid grid-cols-2 gap-3;
-  }
-
-  .login-kpi-card {
-    @apply grid gap-2 rounded-lg border border-white/[0.12] bg-white/10 p-4 text-white backdrop-blur;
-  }
-
-  .login-kpi-card svg {
-    @apply text-mint-500;
-  }
-
-  .login-kpi-card strong {
-    @apply text-xl font-black;
-  }
-
-  .login-kpi-card span {
-    @apply text-xs leading-5 text-white/[0.72];
-  }
-
-  .login-window {
-    @apply overflow-hidden rounded-lg border border-white/[0.12] bg-white/95 shadow-soft;
-  }
-
-  .login-window-header {
-    @apply flex h-11 items-center gap-2 bg-brand-900 px-4;
-  }
-
-  .login-window-header span {
-    @apply h-2.5 w-2.5 rounded-full bg-white/[0.7];
-  }
-
-  .login-window-bars {
-    @apply grid gap-4 p-5;
-  }
-
-  .login-window-bars span {
-    @apply block h-3 rounded-lg bg-[#dfe4ee];
-  }
-
-  .login-window-bars span:nth-child(1) {
-    @apply bg-mint-500;
-  }
-
-  .login-window-bars span:nth-child(3) {
-    @apply bg-skyline-500;
-  }
-
   .login-preview {
     @apply grid overflow-hidden;
     grid-template-rows: 48px auto 1fr;
@@ -348,7 +280,7 @@
   }
 
   .sidebar {
-    @apply fixed inset-y-0 right-0 z-40 flex w-[min(320px,88vw)] translate-x-full flex-col border-l border-borderline bg-white shadow-[-18px_0_45px_rgba(17,24,39,0.18)] transition-transform;
+    @apply fixed inset-y-0 left-0 z-40 flex w-[min(320px,88vw)] -translate-x-full flex-col border-r border-borderline bg-white shadow-[18px_0_45px_rgba(17,24,39,0.18)] transition-transform;
   }
 
   .sidebar-is-open .sidebar {
@@ -396,7 +328,7 @@
   }
 
   .sidebar-group summary {
-    @apply grid min-h-10 cursor-pointer grid-cols-[22px_minmax(0,1fr)] items-center gap-2.5 px-3 text-xs font-black uppercase tracking-normal text-muted-600;
+    @apply grid min-h-10 cursor-pointer grid-cols-[22px_minmax(0,1fr)_16px] items-center gap-2.5 rounded-lg px-3 text-sm font-bold tracking-normal text-muted-600 transition;
     list-style: none;
   }
 
@@ -406,6 +338,18 @@
 
   .sidebar-group-items {
     @apply grid gap-1 pl-2;
+  }
+
+  .sidebar-group-caret {
+    @apply text-muted-600 transition-transform;
+  }
+
+  .sidebar-group[open] .sidebar-group-caret {
+    @apply rotate-180;
+  }
+
+  .sidebar-group summary:hover {
+    @apply bg-[#f6f8fb] text-brand-900;
   }
 
   .sidebar-nav button.active,
@@ -639,6 +583,22 @@
     @apply overflow-x-auto;
   }
 
+  .pagination-bar {
+    @apply flex items-center justify-between gap-3 border-t border-borderline bg-white px-4 py-3 text-sm text-muted-600;
+  }
+
+  .pagination-bar > div {
+    @apply flex items-center gap-3;
+  }
+
+  .pagination-bar strong {
+    @apply text-sm font-black text-ink-700;
+  }
+
+  .pagination-button {
+    @apply min-h-9 px-3;
+  }
+
   table {
     @apply w-full border-collapse;
     min-width: 760px;
@@ -675,10 +635,6 @@
 }
 
 @media (min-width: 1024px) {
-  .login-shell {
-    grid-template-columns: minmax(340px, 430px) minmax(420px, 680px);
-  }
-
   .content-area {
     @apply p-6;
   }
@@ -706,11 +662,11 @@
   }
 
   .topbar-actions {
-    @apply order-1 ml-0 flex-1;
+    @apply order-2 ml-auto flex-none;
   }
 
   .menu-button {
-    @apply order-2;
+    @apply order-1;
   }
 
   .stats-grid,
@@ -748,6 +704,15 @@
 
   .modal-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pagination-bar,
+  .pagination-bar > div {
+    @apply flex-col items-stretch;
+  }
+
+  .pagination-bar strong {
+    @apply text-center;
   }
 }
 

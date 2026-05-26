@@ -21,7 +21,7 @@ export function DashboardPage() {
 
     async function loadStats() {
       const [domains, providers, extensions] = await Promise.all([
-        apiClient.listDomains(),
+        apiClient.listAllDomains(),
         apiClient.listCatalog('domain-providers'),
         apiClient.listCatalog('domain-extensions'),
       ]);
