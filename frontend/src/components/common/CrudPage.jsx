@@ -234,6 +234,7 @@ export function CrudPage({ resource }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const requiredReferences = useMemo(() => {
@@ -347,34 +348,51 @@ export function CrudPage({ resource }) {
     setIsModalOpen(false);
   }
 
-  function handleExport() {
-    const headers = resource.columns.map((column) => `<th>${escapeSpreadsheetCell(column.label)}</th>`).join('');
-    const rows = records.map((record) => {
-      const cells = resource.columns
-        .map((column) => `<td>${escapeSpreadsheetCell(formatCell(record, column, references))}</td>`)
-        .join('');
+  async function handleExport() {
+    setError('');
+    setIsExporting(true);
 
-      return `<tr>${cells}</tr>`;
-    }).join('');
-    const workbook = `
-      <html>
-        <head>
-          <meta charset="UTF-8" />
-        </head>
-        <body>
-          <table>
-            <thead><tr>${headers}</tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </body>
-      </html>
-    `;
+    try {
+      const result = await apiClient.listAllDomains(filters);
+      const exportRecords = result.data || [];
 
-    downloadFile(
-      workbook,
-      `inventario-dominios-${formatDate(new Date())}.xls`,
-      'application/vnd.ms-excel;charset=utf-8',
-    );
+      if (!exportRecords.length) {
+        setError('No hay dominios disponibles para exportar.');
+        return;
+      }
+
+      const headers = resource.columns.map((column) => `<th>${escapeSpreadsheetCell(column.label)}</th>`).join('');
+      const rows = exportRecords.map((record) => {
+        const cells = resource.columns
+          .map((column) => `<td>${escapeSpreadsheetCell(formatCell(record, column, references))}</td>`)
+          .join('');
+
+        return `<tr>${cells}</tr>`;
+      }).join('');
+      const workbook = `
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+          </head>
+          <body>
+            <table>
+              <thead><tr>${headers}</tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      downloadFile(
+        workbook,
+        `inventario-dominios-${formatDate(new Date())}.xls`,
+        'application/vnd.ms-excel;charset=utf-8',
+      );
+    } catch (exportError) {
+      setError(exportError.message);
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   async function handleSubmit(event) {
@@ -455,9 +473,9 @@ export function CrudPage({ resource }) {
         </div>
         <div className="page-actions">
           {resource.key === 'domains' && (
-            <button className="secondary-button" type="button" onClick={handleExport} disabled={!records.length}>
+            <button className="secondary-button" type="button" onClick={handleExport} disabled={!records.length || isExporting}>
               <Download size={16} />
-              Exportar Excel
+              {isExporting ? 'Exportando' : 'Exportar Excel'}
             </button>
           )}
           <button className="secondary-button" type="button" onClick={() => loadRecords(filters)}>

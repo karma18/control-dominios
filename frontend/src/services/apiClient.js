@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const MAX_PAGE_SIZE = 200;
 
 let tokenProvider = () => null;
 
@@ -41,7 +42,7 @@ async function request(path, options = {}) {
 }
 
 function withQuery(path, filters = {}) {
-  const params = new URLSearchParams({ pageSize: '200' });
+  const params = new URLSearchParams({ pageSize: String(MAX_PAGE_SIZE) });
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -50,6 +51,48 @@ function withQuery(path, filters = {}) {
   });
 
   return `${path}?${params.toString()}`;
+}
+
+async function requestAllPages(path, filters = {}) {
+  const pageSize = MAX_PAGE_SIZE;
+  const data = [];
+  let page = 1;
+  let meta = { page, pageSize, total: 0 };
+
+  while (true) {
+    const result = await request(withQuery(path, {
+      ...filters,
+      page,
+      pageSize,
+    }));
+    const pageData = result.data || [];
+
+    data.push(...pageData);
+    meta = result.meta || {
+      page,
+      pageSize,
+      total: data.length,
+    };
+
+    const total = Number(meta.total || data.length);
+    const currentPageSize = Number(meta.pageSize || pageSize);
+
+    if (!pageData.length || data.length >= total || pageData.length < currentPageSize) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return {
+    data,
+    meta: {
+      ...meta,
+      page: 1,
+      pageSize: data.length,
+      total: Number(meta.total || data.length),
+    },
+  };
 }
 
 export const apiClient = {
@@ -83,6 +126,7 @@ export const apiClient = {
     method: 'DELETE',
   }),
   listDomains: (filters = {}) => request(withQuery('/domains', filters)),
+  listAllDomains: (filters = {}) => requestAllPages('/domains', filters),
   createDomain: (payload) => request('/domains', {
     method: 'POST',
     body: payload,
