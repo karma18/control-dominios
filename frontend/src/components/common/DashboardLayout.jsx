@@ -51,7 +51,7 @@ export function DashboardLayout({
 
   return (
     <div className={`app-shell ${isSidebarOpen ? 'sidebar-is-open' : ''}`}>
-      <aside className="sidebar">
+      <aside className="sidebar" id="main-menu">
         <div className="sidebar-brand">
           <img src={autocomLogo} alt="AUTOCOM" />
           <button
@@ -128,14 +128,6 @@ export function DashboardLayout({
 
       <div className="workspace">
         <header className="topbar">
-          <button
-            className="icon-button menu-button"
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            title="Abrir menú"
-          >
-            <Menu size={19} />
-          </button>
           <div className="topbar-search">
             <Search size={17} />
             <input placeholder="Buscar" />
@@ -152,6 +144,16 @@ export function DashboardLayout({
               <LogOut size={18} />
             </button>
           </div>
+          <button
+            className="icon-button menu-button"
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            title="Abrir menú"
+            aria-controls="main-menu"
+            aria-expanded={isSidebarOpen}
+          >
+            <Menu size={19} />
+          </button>
         </header>
 
         {children}
