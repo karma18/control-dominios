@@ -348,7 +348,7 @@
   }
 
   .sidebar {
-    @apply fixed inset-y-0 left-0 z-40 flex w-[min(292px,86vw)] -translate-x-full flex-col border-r border-borderline bg-white shadow-[18px_0_45px_rgba(17,24,39,0.18)] transition-transform;
+    @apply fixed inset-y-0 right-0 z-40 flex w-[min(320px,88vw)] translate-x-full flex-col border-l border-borderline bg-white shadow-[-18px_0_45px_rgba(17,24,39,0.18)] transition-transform;
   }
 
   .sidebar-is-open .sidebar {
@@ -371,9 +371,12 @@
     @apply block h-auto w-[182px] max-w-full;
   }
 
-  .sidebar-close,
-  .menu-button {
+  .sidebar-close {
     @apply bg-white/[0.14] text-white;
+  }
+
+  .menu-button {
+    @apply bg-brand-900 text-white shadow-soft;
   }
 
   .sidebar-nav {
@@ -425,7 +428,7 @@
   }
 
   .topbar-search {
-    @apply flex min-h-10 w-[min(520px,52vw)] items-center gap-2.5 rounded-lg border border-borderline bg-paper-50 px-3 text-muted-600 transition;
+    @apply flex min-h-10 min-w-[220px] max-w-[520px] flex-1 items-center gap-2.5 rounded-lg border border-borderline bg-paper-50 px-3 text-muted-600 transition;
   }
 
   .topbar-actions {
@@ -671,25 +674,13 @@
   }
 }
 
-@media (min-width: 1100px) {
-  .app-shell {
-    grid-template-columns: 284px minmax(0, 1fr);
-  }
-
-  .sidebar {
-    @apply sticky top-0 h-screen translate-x-0 shadow-none;
-  }
-
-  .sidebar-overlay,
-  .sidebar-close,
-  .menu-button {
-    @apply hidden;
-  }
-}
-
 @media (min-width: 1024px) {
   .login-shell {
     grid-template-columns: minmax(340px, 430px) minmax(420px, 680px);
+  }
+
+  .content-area {
+    @apply p-6;
   }
 }
 
@@ -711,7 +702,15 @@
   }
 
   .topbar-search {
-    @apply order-2 w-full;
+    @apply order-3 w-full max-w-none flex-none;
+  }
+
+  .topbar-actions {
+    @apply order-1 ml-0 flex-1;
+  }
+
+  .menu-button {
+    @apply order-2;
   }
 
   .stats-grid,
@@ -749,5 +748,28 @@
 
   .modal-form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    @apply gap-2;
+  }
+
+  .topbar-actions {
+    @apply gap-1.5;
+  }
+
+  .user-chip strong {
+    @apply hidden;
+  }
+
+  .content-area,
+  .login-shell {
+    @apply p-3;
+  }
+
+  .page-heading h1 {
+    @apply text-2xl;
   }
 }
