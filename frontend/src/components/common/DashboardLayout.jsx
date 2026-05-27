@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Search,
   Settings2,
   ShieldCheck,
   Tags,
@@ -140,10 +139,6 @@ export function DashboardLayout({
           >
             <Menu size={19} />
           </button>
-          <div className="topbar-search">
-            <Search size={17} />
-            <input placeholder="Buscar" />
-          </div>
           <div className="topbar-actions">
             <button className="icon-button" type="button" title="Notificaciones">
               <Bell size={18} />

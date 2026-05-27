@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -35,7 +36,7 @@ function getInitialValue(field) {
 function buildInitialForm(resource) {
   return resource.fields.reduce((form, field) => ({
     ...form,
-    [field.name]: getInitialValue(field),
+    [field.name]: normalizeFieldValue(field, getInitialValue(field)),
   }), {});
 }
 
@@ -60,10 +61,40 @@ function formatDate(value) {
   }
 
   if (typeof value === 'string') {
-    return value.slice(0, 10);
+    return normalizeDateValue(value) || '-';
   }
 
-  return new Date(value).toISOString().slice(0, 10);
+  return normalizeDateValue(value) || '-';
+}
+
+function normalizeDateValue(value) {
+  if (!value) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
+
+    if (match) {
+      return match[1];
+    }
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function normalizeFieldValue(field, value) {
+  if (field.type === 'date') {
+    return normalizeDateValue(value);
+  }
+
+  return value;
 }
 
 function formatCell(row, column, references) {
@@ -129,6 +160,11 @@ function normalizePayload(resource, form, editingRecord) {
       return payload;
     }
 
+    if (field.type === 'date') {
+      payload[field.name] = normalizeDateValue(value);
+      return payload;
+    }
+
     payload[field.name] = value;
     return payload;
   }, {});
@@ -181,6 +217,19 @@ function FieldInput({
     );
   }
 
+  if (field.type === 'date') {
+    return (
+      <div className="date-field-control">
+        <input
+          {...commonProps}
+          type="date"
+          value={normalizeDateValue(value)}
+        />
+        <CalendarDays size={17} aria-hidden="true" />
+      </div>
+    );
+  }
+
   return (
     <input
       {...commonProps}
@@ -216,6 +265,20 @@ function FilterInput({
           </option>
         ))}
       </select>
+    );
+  }
+
+  if (field.type === 'date') {
+    return (
+      <div className="date-field-control">
+        <input
+          {...commonProps}
+          type="date"
+          value={normalizeDateValue(value)}
+          placeholder="AAAA-MM-DD"
+        />
+        <CalendarDays size={17} aria-hidden="true" />
+      </div>
     );
   }
 
@@ -352,7 +415,7 @@ export function CrudPage({ resource }) {
         return;
       }
 
-      nextForm[field.name] = record[field.name] ?? getInitialValue(field);
+      nextForm[field.name] = normalizeFieldValue(field, record[field.name] ?? getInitialValue(field));
     });
 
     setEditingRecord(record);
