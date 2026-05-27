@@ -495,6 +495,15 @@
     @apply grid gap-3;
   }
 
+  .report-panel {
+    @apply max-w-[760px];
+  }
+
+  .report-form {
+    @apply grid items-end gap-4;
+    grid-template-columns: repeat(2, minmax(180px, 1fr)) auto;
+  }
+
   .form-field,
   .checkbox-field {
     @apply grid gap-2 text-sm font-bold text-ink-700;
@@ -710,6 +719,10 @@
   }
 
   .modal-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-form {
     grid-template-columns: 1fr;
   }
 

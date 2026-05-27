@@ -5,6 +5,7 @@ import {
   Building2,
   ChevronDown,
   Database,
+  FileSpreadsheet,
   Gauge,
   Globe2,
   KeyRound,
@@ -91,6 +92,26 @@ export function DashboardLayout({
               </button>
             );
           })}
+
+          <details className="sidebar-group">
+            <summary>
+              <FileSpreadsheet size={17} />
+              <span>Reportes</span>
+              <ChevronDown className="sidebar-group-caret" size={16} />
+            </summary>
+
+            <div className="sidebar-group-items">
+              <button
+                className={activeKey === 'budget-report' ? 'active' : ''}
+                type="button"
+                onClick={() => handleSelect('budget-report')}
+                title="Presupuesto"
+              >
+                <FileSpreadsheet size={17} />
+                <span>Presupuesto</span>
+              </button>
+            </div>
+          </details>
 
           <details className="sidebar-group">
             <summary>

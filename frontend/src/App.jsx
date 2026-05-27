@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './app/providers/AuthProvider';
 import { DashboardLayout } from './components/common/DashboardLayout';
 import { DashboardPage } from './components/common/DashboardPage';
 import { CrudPage } from './components/common/CrudPage';
+import { BudgetReportPage } from './components/reports/BudgetReportPage';
 import { resources } from './config/resources';
 import { LoginPage } from './pages/LoginPage';
 
@@ -40,6 +41,8 @@ function AuthenticatedApp() {
     <DashboardLayout activeKey={activeKey} onSelect={setActiveKey}>
       {activeKey === 'dashboard' ? (
         <DashboardPage />
+      ) : activeKey === 'budget-report' ? (
+        <BudgetReportPage />
       ) : (
         <CrudPage resource={activeResource} />
       )}
