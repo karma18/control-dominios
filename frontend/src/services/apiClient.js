@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const DEFAULT_PAGE_SIZE = 100;
 const MAX_PAGE_SIZE = 200;
 
 let tokenProvider = () => null;
@@ -42,7 +43,7 @@ async function request(path, options = {}) {
 }
 
 function withQuery(path, filters = {}) {
-  const params = new URLSearchParams({ pageSize: String(MAX_PAGE_SIZE) });
+  const params = new URLSearchParams({ pageSize: String(DEFAULT_PAGE_SIZE) });
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -54,14 +55,18 @@ function withQuery(path, filters = {}) {
 }
 
 async function requestAllPages(path, filters = {}) {
+  const queryFilters = { ...filters };
   const pageSize = MAX_PAGE_SIZE;
   const data = [];
   let page = 1;
   let meta = { page, pageSize, total: 0 };
 
+  delete queryFilters.page;
+  delete queryFilters.pageSize;
+
   while (true) {
     const result = await request(withQuery(path, {
-      ...filters,
+      ...queryFilters,
       page,
       pageSize,
     }));
@@ -102,6 +107,7 @@ export const apiClient = {
   }),
   me: () => request('/auth/me'),
   listCatalog: (resource, filters = {}) => request(withQuery(`/catalog/${resource}`, filters)),
+  listAllCatalog: (resource, filters = {}) => requestAllPages(`/catalog/${resource}`, filters),
   createCatalog: (resource, payload) => request(`/catalog/${resource}`, {
     method: 'POST',
     body: payload,
@@ -114,6 +120,7 @@ export const apiClient = {
     method: 'DELETE',
   }),
   listUsers: (filters = {}) => request(withQuery('/users', filters)),
+  listAllUsers: (filters = {}) => requestAllPages('/users', filters),
   createUser: (payload) => request('/users', {
     method: 'POST',
     body: payload,

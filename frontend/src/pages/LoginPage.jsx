@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import {
-  CircleCheck,
   KeyRound,
   LockKeyhole,
   Mail,
   ShieldCheck,
-  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../app/providers/AuthProvider';
 import autocomLogo from '../assets/images/autocom-logo.png';
@@ -84,39 +82,6 @@ export function LoginPage({ onLoginSuccess }) {
           </div>
         </form>
       </section>
-
-      <aside className="login-aside" aria-label="Resumen de operación">
-        <div className="login-aside-header">
-          <span>Vista operativa</span>
-          <strong>Dominios al día</strong>
-        </div>
-
-        <div className="login-kpi-grid">
-          <div className="login-kpi-card">
-            <TrendingUp size={18} />
-            <strong>45 días</strong>
-            <span>Ventana de renovación</span>
-          </div>
-          <div className="login-kpi-card">
-            <CircleCheck size={18} />
-            <strong>Catálogos</strong>
-            <span>Relacionados con precios y proveedores</span>
-          </div>
-        </div>
-
-        <div className="login-window">
-          <div className="login-window-header">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className="login-window-bars">
-            <span style={{ width: '72%' }} />
-            <span style={{ width: '48%' }} />
-            <span style={{ width: '86%' }} />
-          </div>
-        </div>
-      </aside>
     </main>
   );
 }

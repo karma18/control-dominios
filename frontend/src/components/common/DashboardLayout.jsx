@@ -3,14 +3,15 @@ import {
   BadgeDollarSign,
   Bell,
   Building2,
+  ChevronDown,
   Database,
+  FileSpreadsheet,
   Gauge,
   Globe2,
   KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
-  Search,
   Settings2,
   ShieldCheck,
   Tags,
@@ -92,10 +93,31 @@ export function DashboardLayout({
             );
           })}
 
-          <details className="sidebar-group" open>
+          <details className="sidebar-group">
+            <summary>
+              <FileSpreadsheet size={17} />
+              <span>Reportes</span>
+              <ChevronDown className="sidebar-group-caret" size={16} />
+            </summary>
+
+            <div className="sidebar-group-items">
+              <button
+                className={activeKey === 'budget-report' ? 'active' : ''}
+                type="button"
+                onClick={() => handleSelect('budget-report')}
+                title="Presupuesto"
+              >
+                <FileSpreadsheet size={17} />
+                <span>Presupuesto</span>
+              </button>
+            </div>
+          </details>
+
+          <details className="sidebar-group">
             <summary>
               <Database size={17} />
               <span>Catálogos</span>
+              <ChevronDown className="sidebar-group-caret" size={16} />
             </summary>
 
             <div className="sidebar-group-items">
@@ -128,10 +150,16 @@ export function DashboardLayout({
 
       <div className="workspace">
         <header className="topbar">
-          <div className="topbar-search">
-            <Search size={17} />
-            <input placeholder="Buscar" />
-          </div>
+          <button
+            className="icon-button menu-button"
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            title="Abrir menú"
+            aria-controls="main-menu"
+            aria-expanded={isSidebarOpen}
+          >
+            <Menu size={19} />
+          </button>
           <div className="topbar-actions">
             <button className="icon-button" type="button" title="Notificaciones">
               <Bell size={18} />
@@ -144,16 +172,6 @@ export function DashboardLayout({
               <LogOut size={18} />
             </button>
           </div>
-          <button
-            className="icon-button menu-button"
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            title="Abrir menú"
-            aria-controls="main-menu"
-            aria-expanded={isSidebarOpen}
-          >
-            <Menu size={19} />
-          </button>
         </header>
 
         {children}
